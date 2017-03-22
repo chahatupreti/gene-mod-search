@@ -1,0 +1,109 @@
+Coding notes - 
+1. if v is a string eg. "dfgsdfg" then v=v[0:-1] will consider v as a list of string
+
+2. if you want to skip every alternate line, use the code used in D:\M.Tech work\code for finding matches in qfilter.py
+
+3. whenever reading a file with lines, always use .readlines() insead of .read() etc. Eg. in D:\M.Tech work\find occurence of each filter element in qfilter.py , 
+using f.read() gave wrong count for may words, while readlines gave all correct answers
+
+4. mutant.*?causes 
+		is probably better than 
+	mutant\s.*?\scauses 
+as the previous will match 'mutant causes' and 'mutant dsgkln sfj jf causes' both but the latter will not match 'mutant causes'
+
+5. You need to escape the all_keys and gs. 
+		if re.search(r'(%s-deletion\s.*?\s%s)' % (re.escape(all_keys), re.escape(gs)), s, re.I|re.S): 
+				instead of 
+		if re.search(r'(%s-deletion\s.*?\s%s)' % (all_keys, gs), s, re.I|re.S):  
+				otherwise it will take all_keys and gs as regexes.
+		
+6. For creating a list, use
+	c=[]
+	c.append(d)               
+				instead of
+	k=0
+	c=[]	
+		c[k]=d 
+		k=k+1
+				as the list is empty, so in the latter case, you're attempting to write to element [0] in the first iteration, which doesn't exist yet.
+				it gives 'IndexError: list assignment index out of range'
+
+7. Files in Python are iterators, meaning they can be looped over, or have iteration operations applied to them.
+
+To get every 5th line, for example, would be:
+
+import itertools
+
+with open(filename, 'r') as f:
+    fifthlines = itertools.islice(f, 0, None, 5)
+    for line in fifthlines:
+        # do something with line
+		
+8. To subtract two lists, do the following - 
+	from collections import Counter
+	a=['q','fd','fhj','dvd']
+	b=['q','we','qw']
+	a=Counter(a)
+	b=Counter(b)
+	a=list(a-b)
+	
+9. To make a list of lists - 
+	a=[1,2,3,4,5]
+	b=[7,5,7,8,3,2]
+	c=[43,45,76,3,5]
+	e=[[] for x in xrange(3)]
+	e[0]=a
+	e[1]=b
+	e[2]=c
+
+	for i in range(0,len(e)):
+		print e[i]
+
+10. "Global" variables in python are actually scoped to the module/file they're bound in; you do need to import them in every file that uses them.	
+		i.e. if you have defined a function in another file and that function uses 're', you have to import re in that file itself. the re imported
+		in the file you are calling from, wont work
+		
+11. In order to change a list of tuples, convert it into a list of lists because in Python tuples are immutable.
+Eg. - 
+	a=[(1,'a'),(2,'b'),(3,'c'),(4,'a'),(5, 'b'),(6,'a')]
+	for k in xrange(len(a)):
+		for i in range(k+1,len(a)):
+			if a[k][1]==a[i][1]:
+				a[k][0]=a[k][0]+a[i][0]
+    This will not work because (1,'a') etc. are tuples. Convert them to list, like - 
+		a=[(1,'a'),(2,'b'),(3,'c'),(4,'a'),(5, 'b'),(6,'a')]
+		a = [list(t) for t in a]   #<------------- here
+		for k in xrange(len(a)):
+			for i in range(k+1,len(a)):
+				if a[k][1]==a[i][1]:
+					a[k][0]=a[k][0]+a[i][0]
+	Now its not (1,'a') but [1,'a'] i.e. the elements of 'a' are now lists, not tuples. 'a' itself was and still is a list.
+	
+12. Just learnt that when i import a function from another file (F2) into my python code (like 'from new_rules import sdf'), this is what it does - it first executes the 'entire' imported 'file', except for the functions (because functions execute only when they are called), and then as and when these imported functions are called, they are executed. Therefore if you have some 'open file_1' command in the top of your F2 and 'close file' command at it's end, then these are executed first of all (and now your files are overall, closed). Then the function 'sdf' may be called later by your code and be executed. If now this function needs to write something to the 'file_1', it can't because it has already been opened and closed as said above. So solution for this is to keep your 'close file' commands protected inside a function, which would therefore not be executed when F2 is executed on calling initially. Then, call this function at the end of your code, so that these files are closed when everything is over. Eg. ‘df for new rules’ does this.
+
+13. abc.rstrip() by itself wont change the string 'abc', we have to do abc = abc.rstrip() 
+Reason - The clue is in the signature of rstrip. 
+It returns a copy of the string, but with the desired characters stripped, thus you'll need to assign line the new value:
+line = line.rstrip('\n')
+As Max. S says in the comments, in general, Python strings are immutable which means that any "mutating" operation will yield a mutated copy.
+So, if you want to change any Python string, the operation itself wont do it, it will create a changed version of the string and then its your responsibility to assign it to the same variable in order to see the change.
+
+14. 
+>>> b=[0 for _ in a]
+>>> id(b)
+139919670230984
+>>> b=a
+>>> id(b)   # id gives the memory location of the variable. think of it like your social security number
+139919670139432
+
+>>> b=[0 for _ in a]
+>>> id(b)
+139919604930536
+>>> b[:] = a
+>>> id(b)
+139919604930536
+In the first case, the name b is rebound to the list a (which would be the list comp in your example). So the original data bucket that "b" pointed to is lost.
+In the second case, b is mutated, that is the bucket it points to is the same, but the bucket is now filled with the contents of "a"
+note that b=[0 for _ in a] is only there to get a new set of buckets to set up the example with:)
+The first choice is rebinding "a", the second choice is mutating the original list.
+--------from (http://chat.stackoverflow.com/transcript/message/32314110#32314110)
